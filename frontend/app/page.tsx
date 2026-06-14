@@ -3,7 +3,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
-
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 export default function Home() {
   const [topic, setTopic] = useState("");
   const [report, setReport] = useState("");
@@ -30,7 +30,7 @@ export default function Home() {
     setLogs([]);   // Clear previous logs
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/v1/generate-report", {
+      const response = await fetch(`${API_BASE_URL}/api/v1/generate-report`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -161,7 +161,7 @@ export default function Home() {
             <div className="flex gap-4 justify-end">
               <button
                 onClick={async () => {
-                  const res = await fetch("http://127.0.0.1:8000/api/v1/export/pdf", {
+                 const res = await fetch(`${API_BASE_URL}/api/v1/export/pdf`, {
                     method: "POST", headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ topic, markdown: report })
                   });
@@ -176,7 +176,7 @@ export default function Home() {
               </button>
               <button
                 onClick={async () => {
-                  const res = await fetch("http://127.0.0.1:8000/api/v1/export/word", {
+                  const res = await fetch(`${API_BASE_URL}/api/v1/export/word`, {
                     method: "POST", headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ topic, markdown: report })
                   });
