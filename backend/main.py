@@ -4,7 +4,8 @@ import asyncio
 import time
 import io
 import unicodedata
-import redis.asyncio as redis
+# Updated: Using Upstash Serverless Redis (Async)
+from upstash_redis.asyncio import Redis 
 from fastapi import FastAPI, HTTPException, Response
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -36,8 +37,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize Redis Client
-redis_client = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
+# Initialize Upstash Redis Client Safely
+try:
+    redis_client = Redis(
+        url=os.getenv("UPSTASH_REDIS_REST_URL", ""),
+        token=os.getenv("UPSTASH_REDIS_REST_TOKEN", "")
+    )
+except Exception as e:
+    print(f"Failed to connect to Upstash Redis: {e}")
+    redis_client = None
 
 class ResearchRequest(BaseModel):
     topic: str
@@ -109,8 +117,13 @@ async def generate_full_report(payload: ResearchRequest):
                 
                 cache_key = f"research_cache:{payload.topic.strip().lower()}"
                 cached_report = None
-                try: cached_report = await redis_client.get(cache_key)
-                except: pass
+                
+                # Safely check Upstash Cache
+                if redis_client:
+                    try: 
+                        cached_report = await redis_client.get(cache_key)
+                    except: 
+                        pass
 
                 if cached_report:
                     await log_queue.put({"type": "log", "message": "⚡ [Memory] Cache hit! Bypassing agents..."})
@@ -134,8 +147,13 @@ async def generate_full_report(payload: ResearchRequest):
                 state.update(editor_updates)
                 
                 final_markdown = state["final_report"]
-                try: await redis_client.setex(cache_key, 604800, final_markdown)
-                except: pass 
+                
+                # Safely set Upstash Cache
+                if redis_client:
+                    try: 
+                        await redis_client.setex(cache_key, 604800, final_markdown)
+                    except: 
+                        pass 
                 
                 await log_queue.put({"type": "log", "message": f"🏁 ========== COMPLETE in {time.time() - start_time:.2f}s =========="})
                 await log_queue.put({"type": "done", "report_markdown": final_markdown})

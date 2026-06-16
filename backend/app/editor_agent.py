@@ -6,6 +6,7 @@ from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from app.state import AgentState
 
+
 # 2. Replace ChatGroq with ChatOpenAI targeting Cerebras
 editor_llm = ChatOpenAI(
     api_key=os.getenv("CEREBRAS_API_KEY"),

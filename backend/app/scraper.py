@@ -7,6 +7,7 @@ def scrape_url_content(url: str) -> str:
     """
     Scrapes a URL using a headless Chromium browser.
     Uses an isolated Proactor event loop to completely bypass Windows/Uvicorn conflicts.
+    Memory-optimized for Free Tier Cloud Deployments.
     """
     
     # 1. Force the correct Windows policy for this specific isolated thread
@@ -21,7 +22,17 @@ def scrape_url_content(url: str) -> str:
     async def _do_scrape():
         try:
             async with async_playwright() as p:
-                browser = await p.chromium.launch(headless=True)
+                # UPDATED: Cloud-ready memory optimization arguments injected here
+                browser = await p.chromium.launch(
+                    headless=True,
+                    args=[
+                        "--disable-gpu", 
+                        "--no-sandbox", 
+                        "--disable-dev-shm-usage",
+                        "--disable-setuid-sandbox",
+                        "--single-process" 
+                    ]
+                )
                 context = await browser.new_context(
                     user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
                 )
