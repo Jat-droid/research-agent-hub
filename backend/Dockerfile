@@ -16,5 +16,4 @@ ENV PYTHONUNBUFFERED=1
 # Tell Docker to use Render's native default port
 EXPOSE 10000
 
-# Start the server using raw shell syntax (no brackets)
-CMD uvicorn main:app --host 0.0.0.0 --port 10000
+CMD python -m uvicorn main:app --host 0.0.0.0 --port 10000
