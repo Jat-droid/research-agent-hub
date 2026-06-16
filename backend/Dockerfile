@@ -10,8 +10,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy your code
 COPY . .
 
-# Expose the port FastAPI will run on
-EXPOSE 8000
+# Force Python to print logs immediately instead of hiding them
+ENV PYTHONUNBUFFERED=1
 
-# Command to run the server
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Tell Docker to use Render's native default port
+EXPOSE 10000
+
+# Start the server using raw shell syntax (no brackets)
+CMD uvicorn main:app --host 0.0.0.0 --port 10000
